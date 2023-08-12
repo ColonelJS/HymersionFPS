@@ -9,6 +9,6 @@ public class Spawner : MonoBehaviour
 
     public NetworkObject SpawnPlayer(PlayerRef _player)
     {
-        return NetworkManager._networkRunner.Spawn(player, Vector3.zero, Quaternion.identity, _player);
+        return NetworkManager.Instance.GetNetworkRunner().Spawn(player, Vector3.zero, Quaternion.identity, _player);
     }
 }

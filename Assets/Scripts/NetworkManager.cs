@@ -6,11 +6,23 @@ using System;
 
 public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
 {
-    public static NetworkRunner _networkRunner;
+    public static NetworkManager Instance;
+
+    NetworkRunner _networkRunner;
     [SerializeField] Player playerPrefab;
     PlayerSpawn playerSpawns;
+    HUD hud;
 
     Dictionary<PlayerRef, Player> _listPlayers = new Dictionary<PlayerRef, Player>();
+
+    private void Awake()
+    {
+        // Singleton
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
 
     /// <summary>
     /// Called for hosting a unique session named MasterSession
@@ -113,7 +125,11 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
 
     public void OnPlayerLeft(NetworkRunner runner, PlayerRef player)
     {
-        
+        if (_listPlayers.TryGetValue(player, out Player networkPlayerObj))
+        {
+            _networkRunner.Despawn(networkPlayerObj.GetComponent<NetworkObject>());
+            _listPlayers.Remove(player);
+        }
     }
 
     public void OnReliableDataReceived(NetworkRunner runner, PlayerRef player, ArraySegment<byte> data)
@@ -125,6 +141,7 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
     {
         //Retreive the playerSpawns object of the scene who contain all the spawn point
         playerSpawns = GameObject.FindGameObjectWithTag("PlayerSpawn").GetComponent<PlayerSpawn>();
+        hud = GameObject.FindGameObjectWithTag("HUD").GetComponent<HUD>();
     }
 
     public void OnSceneLoadStart(NetworkRunner runner)
@@ -146,4 +163,9 @@ public class NetworkManager : MonoBehaviour, INetworkRunnerCallbacks
     {
         
     }
+
+    public PlayerSpawn GetPlayerSpawns() => playerSpawns;
+    public NetworkRunner GetNetworkRunner() => _networkRunner;
+
+    public HUD GetHUD() => hud;
 }
